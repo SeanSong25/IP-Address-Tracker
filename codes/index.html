@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+        <link rel="stylesheet" href="index.css">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="main-content">
+            <h1>IP Address Tracker</h1>
+            <div class='search'>
+                <input class="search-bar"></input>
+                <div class='search-arrow' onclick="check()">
+                    <img src="../images/icon-arrow.svg" ></img>
+                </div>
+                
+            </div>
+            <div class="options">
+                <div class="displayer ip">
+                    <h3>IP Address</h3>
+                    <div id="ip-address"></div>
+                </div> 
+                
+                <div class="displayer location">
+                    <h3>Location</h3>
+                    <div id="location"></div>
+                </div> 
+                
+                <div class="displayer time-zone">
+                    <h3>Time Zone</h3>
+                    <div id="time-zone"></div>
+                </div>
+                <div class="displayer">
+                    <h3>ISP</h3>
+                    <div id="isp"></div>
+                </div>
+                
+            </div>
+            <div class="map">
+                <img class='position-icon' src="../images/icon-location.svg"></img>
+                <div id="mapid"></div>
+            </div>
+        </div>
+        <script>
+            
+            var mymap = L.map('mapid',{zoomControl:false});
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1Ijoic29uZ3hpYW95YW4iLCJhIjoiY2tzZ3h6amo4MXA5ZDJ1cGkwZmo0Nm80bCJ9.QlRyjp1exb5Yban8O1iK8A'
+        }).addTo(mymap);
+
+
+            var input = document.getElementsByClassName('search-bar')[0];
+            input.value = '8.8.8.8';
+            var err = false; //error flag for api callback
+            var ipAddress,loc,timeZone,isp,lat,lng;
+            const ipDiv = document.getElementById('ip-address');
+            const locationDiv = document.getElementById('location');
+            const timezoneDiv = document.getElementById('time-zone');
+            const ispDiv = document.getElementById('isp');
+            check();
+            async function check(){
+                err=false;
+                let data = await fetcher(input.value);
+                if(err==false){
+                    ipAddress = data.ip;
+                    
+                     timeZone = 'UTC '+data.location.timezone;
+                     if(timeZone=='UTC '){timeZone+='Unknown time zone';}
+                     isp = data.isp;
+                     loc = data.location.city+', '+data.location.region +' '+data.location.postalCode;
+                     if(loc==',  '){loc='Unknown location';}
+                     lat = data.location.lat;
+                     lng = data.location.lng;
+                     mymap.setView(new L.LatLng(lat, lng), 13);
+                     console.log("length: ", ipDiv.children.length);
+                     if(ipDiv.childNodes.length>0){
+                         console.log('correct if');
+                         ipDiv.replaceChild(document.createTextNode(ipAddress),ipDiv.lastChild)
+                         locationDiv.replaceChild(document.createTextNode(loc),locationDiv.lastChild)
+                         timezoneDiv.replaceChild(document.createTextNode(timeZone),timezoneDiv.lastChild)
+                         ispDiv.replaceChild(document.createTextNode(isp),ispDiv.lastChild)
+                     }else{
+                         ipDiv.appendChild(document.createTextNode(ipAddress));
+                         locationDiv.appendChild(document.createTextNode(loc));
+                         timezoneDiv.appendChild(document.createTextNode(timeZone));
+                         ispDiv.appendChild(document.createTextNode(isp));
+                     }
+                    
+                }
+                
+            }
+
+            async function fetcher(ip){
+                let Data;
+                await $.get("https://geo.ipify.org/api/v1?apiKey=at_GMPh0oTOPUPp4BCx0MlRIFo2mQLXM&ipAddress="+ip,(data,status)=>{
+                    Data = data;
+                }).fail(function(jqXHR,textStatus,error){
+                    console.log(error);
+                    err = true;
+                });
+                return Data;
+            }
+        </script>
+    </body>
+</html>
