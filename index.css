@@ -1,12 +1,12 @@
 
 @font-face{
     font-family:regular;
-    src:url(../Rubik/Rubik-VariableFont_wght.ttf);
+    src:url(Rubik/Rubik-VariableFont_wght.ttf);
 }
 
 @font-face{
     font-family:Bold;
-    src:url(../Rubik/static/Rubik-Bold.ttf);
+    src:url(Rubik/static/Rubik-Bold.ttf);
 }
 
 
